@@ -1,26 +1,489 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-inter: var(--font-inter), sans-serif;
+  --font-anton: var(--font-anton), sans-serif;
+  --font-press-start: var(--font-press-start), monospace;
+  --font-cormorant: var(--font-cormorant), serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #1b4b43;
+  color: #ffffff;
+  font-family: var(--font-inter), sans-serif;
+  touch-action: none;
+  user-select: none;
+}
+
+/* Phase 1 Loading (Picture 2 style - Deep Jade to Mint Green Gradient) */
+.loading-bg {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(180deg, #1b453a 0%, #25584c 35%, #427c6f 70%, #7db8a8 100%);
+  overflow: hidden;
+}
+
+.bottom-counter {
+  display: none;
+}
+
+/* Phase 1: Heavenly Cloud Background & Ethereal Veil */
+.cloud-background-container {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 45%, #ffffff 0%, #edf6fa 45%, #d4e8f2 100%);
+}
+
+.cloud-dreamscape-layer {
+  position: absolute;
+  inset: -5%;
+  width: 110%;
+  height: 110%;
+  background: url('/assets/dreamscape_bg.jpg') center/cover no-repeat;
+  opacity: 0.4;
+  filter: blur(8px) brightness(1.1);
+  transform: scale(1.02);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+
+.cloud-veil-layer {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.8) 0%, rgba(240, 248, 255, 0.85) 50%, rgba(215, 235, 245, 0.95) 100%);
+  pointer-events: none;
+}
+
+.cloud-ambient-drift {
+  position: absolute;
+  inset: -10%;
+  width: 120%;
+  height: 120%;
+  background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.9) 0%, transparent 60%);
+  pointer-events: none;
+  animation: cloudPulse 6s ease-in-out infinite alternate;
+}
+
+@keyframes cloudPulse {
+  0% { transform: scale(1) translateY(0px); opacity: 0.7; }
+  100% { transform: scale(1.04) translateY(-10px); opacity: 0.95; }
+}
+
+#phase1 {
+  z-index: 50;
+  background: transparent;
+}
+
+#name-text-phase1 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-cormorant), Georgia, serif;
+  font-size: clamp(2.2rem, 5.8vw, 5.5rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: clamp(6px, 1.2vw, 16px);
+  text-align: center;
+  width: 95%;
+  line-height: 1.25;
+  user-select: none;
+  transition: color 0.25s ease-out, text-shadow 0.25s ease-out, filter 0.25s ease-out, transform 0.25s ease-out;
+}
+
+
+
+#phase2 {
+  z-index: 40;
+  background: transparent;
+}
+canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+#drawing-canvas {
+  cursor: crosshair;
+  z-index: 20;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#instruction-wrapper {
+  position: absolute;
+  top: 10%;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 30;
+}
+.draw-instruction {
+  font-family: var(--font-press-start), monospace;
+  font-size: clamp(0.8rem, 2vw, 1.2rem);
+  color: #0d3b30;
+  font-weight: 700;
+  text-shadow: 0 1px 4px rgba(255, 255, 255, 0.9);
+  animation: pulse 1.5s infinite;
+  text-align: center;
+  transition: color 0.3s ease;
+  background: rgba(255, 255, 255, 0.75);
+  padding: 8px 18px;
+  border-radius: 20px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(167, 243, 208, 0.8);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+.shake-error {
+  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+  color: #d32f2f !important;
+  background: rgba(255, 235, 235, 0.8) !important;
+  border-color: #d32f2f !important;
+}
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+#svg-a-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  z-index: 35;
+}
+
+/* Phase 3 & 4: Surreal Dreamscape & 3D Hands (Pictures 3 & 4) */
+#phase3 {
+  z-index: 60;
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  perspective: 1000px;
+}
+
+.dreamscape-bg-layer {
+  position: absolute;
+  inset: -5%;
+  width: 110%;
+  height: 110%;
+  background-size: cover;
+  background-position: center;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.dreamscape-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.15) 0%, rgba(200, 240, 230, 0.25) 50%, rgba(130, 180, 170, 0.4) 100%);
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+.god-rays-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 80% 10%, rgba(255, 255, 255, 0.5) 0%, rgba(255, 250, 220, 0.2) 40%, transparent 70%);
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.serif-hero-title {
+  font-family: var(--font-cormorant), Georgia, serif;
+}
+
+/* Energy Light Ring (Picture 4) */
+.energy-ring {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 5px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 35px 12px rgba(255, 255, 255, 0.9), 0 0 80px 25px rgba(160, 255, 220, 0.7);
+  animation: energyPulse 1.2s infinite alternate ease-in-out;
+}
+@keyframes energyPulse {
+  0% { transform: scale(0.92); opacity: 0.8; }
+  100% { transform: scale(1.12); opacity: 1; box-shadow: 0 0 50px 20px rgba(255, 255, 255, 1), 0 0 100px 40px rgba(180, 255, 230, 0.9); }
+}
+
+/* Ethereal Cloud Blanket Layer */
+.clouds-blanket {
+  position: absolute;
+  inset: -10%;
+  width: 120%;
+  height: 120%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background-size: cover;
+  background-position: center bottom;
+  will-change: transform, opacity;
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.clouds-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 60%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.5) 45%, rgba(200, 240, 230, 0.15) 75%, transparent 100%);
+  mix-blend-mode: soft-light;
+  transition: opacity 1.2s ease;
+}
+
+/* Floating Sakura Petals - 100% GPU Compositor Thread */
+@keyframes petalFall {
+  0% {
+    transform: translate3d(var(--start-x, 0vw), -8vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.85;
+  }
+  88% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(var(--end-x, 10vw), 108vh, 0) rotate(var(--rot, 360deg));
+    opacity: 0;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.petal-particle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  will-change: transform;
+  mix-blend-mode: screen;
+  animation: petalFall var(--dur, 12s) linear infinite;
+  animation-delay: var(--del, 0s);
 }
+
+/* Glassmorphic UI Elements */
+.glass-pill {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(31, 68, 60, 0.15);
+}
+
+.dark-pill-btn {
+  background: #1e1e1e;
+  color: #ffffff;
+  border-radius: 9999px;
+  padding: 10px 32px;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s ease;
+}
+.dark-pill-btn:hover {
+  background: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+}
+
+.brutalist-title {
+  font-family: var(--font-anton), sans-serif;
+  text-transform: uppercase;
+  line-height: 0.85;
+  text-align: center;
+  width: 100%;
+}
+.text-giant { 
+  font-size: clamp(3.5rem, 12vw, 15rem); 
+  color: #000000; 
+  margin-top: -5px;
+}
+.text-stroke {
+  font-size: clamp(2.5rem, 8vw, 10rem);
+  color: transparent;
+  -webkit-text-stroke: 2px #000000;
+  letter-spacing: 2px;
+}
+
+@media (min-width: 768px) {
+  .text-giant { margin-top: -20px; }
+  .text-stroke { -webkit-text-stroke: 2.5px #000000; }
+}
+
+.info-pill {
+  display: inline-block;
+  border: 2px solid #000000;
+  border-radius: 50px;
+  padding: 10px 24px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 8px;
+  background: #ffffff;
+  color: #000000;
+  transition: all 0.3s ease;
+  font-size: clamp(0.8rem, 1.5vw, 1rem);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.info-pill:hover {
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
+  transform: translateY(-2px);
+}
+
+.marquee-container {
+  position: absolute;
+  bottom: 5%;
+  width: 110%;
+  left: -5%;
+  background: #000000;
+  color: #ffffff;
+  overflow: hidden;
+  transform: rotate(-2deg);
+  padding: 15px 0;
+  white-space: nowrap;
+  z-index: 5;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+.marquee-content {
+  display: inline-block;
+  font-family: var(--font-anton), sans-serif;
+  font-size: clamp(1.5rem, 4vw, 3rem);
+  animation: marquee 20s linear infinite;
+  color: #ffffff;
+}
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Editorial About Screen Styles (Picture 2 Reference) */
+.editorial-dot-grid {
+  background-color: #fdfdfd;
+  background-image: radial-gradient(#cbd5e1 1.25px, transparent 1.25px);
+  background-size: 24px 24px;
+}
+
+.drop-cap {
+  float: left;
+  font-family: var(--font-cormorant), Georgia, serif;
+  font-size: 4rem;
+  line-height: 0.8;
+  padding-top: 4px;
+  padding-right: 12px;
+  padding-bottom: 2px;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+@keyframes floatCrown {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(1deg);
+  }
+}
+
+.floating-crown {
+  animation: floatCrown 4.5s ease-in-out infinite;
+}
+
+@keyframes spinLogoCircle {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-spin-circle {
+  animation: spinLogoCircle 6s linear infinite;
+  transform-origin: center center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes spin-orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes counter-spin-orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+/* Continuous Vertical Auto-Scroll DOWNWARDS (Infinite Marquee) */
+@keyframes continuousScrollDown {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0%);
+  }
+}
+
+.animate-scroll-down {
+  animation: continuousScrollDown 26s linear infinite;
+  will-change: transform;
+}
+
+@keyframes levitate {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes levitate1 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(0, -9px) rotate(4deg); }
+}
+
+@keyframes levitate2 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-3px, -11px) rotate(-5deg); }
+}
+
+@keyframes levitate3 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(3px, -8px) rotate(3deg); }
+}
+
+@keyframes levitate4 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-2px, -10px) rotate(-3deg); }
+}
+
+@keyframes levitate5 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(2px, -7px) rotate(5deg); }
+}
+
+
