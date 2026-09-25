@@ -437,21 +437,6 @@ const PROJECTS_DATA: ProjectItem[] = [
   },
 ];
 
-interface ShowcaseMedia {
-  id: string;
-  type: "photo" | "video";
-  src: string;
-  alt: string;
-}
-
-const SHOWCASE_MEDIA: ShowcaseMedia[] = [
-  { id: "school", type: "photo", src: "/assets/gallery/photo_school.jpg", alt: "Arga - SMKN 8 Jakarta" },
-  { id: "basket", type: "photo", src: "/assets/gallery/photo_basket.jpg", alt: "Arga - Basketball" },
-  { id: "video", type: "video", src: "/assets/vd_basket.mp4", alt: "Arga - Video Basket" }, // Urutan ketiga!
-  { id: "pool", type: "photo", src: "/assets/gallery/photo_pool.png", alt: "Arga - Poolside" },
-  { id: "bandana", type: "photo", src: "/assets/gallery/photo_bandana.png", alt: "Arga - Cap & Bandana" },
-  { id: "pramuka", type: "photo", src: "/assets/gallery/photo_pramuka.png", alt: "Arga - Pramuka" },
-];
 
 // Progressive Text Styling for ARGA FABIAN GIBRAN on Heavenly Cloud Background:
 // 1. 0% - 30%: Sangat samar-samar menyatu dengan awan putih (soft faint cloud slate tint, subtle blur)
@@ -514,8 +499,6 @@ const getTextStyle = (val: number): React.CSSProperties => {
 export default function Home() {
   const [phase, setPhase] = useState<1 | 2 | 3>(1);
   const [counterValue, setCounterValue] = useState(0);
-  const [is100Percent, setIs100Percent] = useState(false);
-  const [isShattering, setIsShattering] = useState(false);
   const [isPhase1Exiting, setIsPhase1Exiting] = useState(false);
 
   // Phase 3 3D hands & Hold state (Direct Hardware & Raf References)
@@ -618,7 +601,6 @@ export default function Home() {
   const claspHandshakeSrc = "/assets/clasp_handshake_trans.png";
 
   // Canvas, audio and Phase 3 direct element DOM refs
-  const iceCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const phase1Ref = useRef<HTMLDivElement | null>(null);
 
   const dreamscapeBgRef = useRef<HTMLDivElement | null>(null);
@@ -635,30 +617,30 @@ export default function Home() {
   const celestialCardRef = useRef<HTMLDivElement | null>(null);
 
   const cracksRef = useRef<CrackBranch[]>([]);
-  const sparklesRef = useRef<Sparkle[]>([]);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const soundEnabledRef = useRef<boolean>(true);
-  const lastCrackSoundTimeRef = useRef(0);
-  const cachedNoiseBufferRef = useRef<AudioBuffer | null>(null);
 
   // Check URL query parameters on mount to assist instant inspection
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.get("phase") === "3" || params.get("p3")) {
-        setPhase(3);
-        if (params.get("hold") === "1") {
-          targetProgress.current = 1;
-          currentProgress.current = 1;
-          setHasConnected(true);
-        }
-        if (params.get("about") === "1") {
-          setShowAboutScreen(true);
-        }
-        if (params.get("hobby") === "1") {
-          setShowAboutScreen(true);
-          setShowHobbyModal(true);
-        }
+        const timer = setTimeout(() => {
+          setPhase(3);
+          if (params.get("hold") === "1") {
+            targetProgress.current = 1;
+            currentProgress.current = 1;
+            setHasConnected(true);
+          }
+          if (params.get("about") === "1") {
+            setShowAboutScreen(true);
+          }
+          if (params.get("hobby") === "1") {
+            setShowAboutScreen(true);
+            setShowHobbyModal(true);
+          }
+        }, 0);
+        return () => clearTimeout(timer);
       }
     }
   }, []);
@@ -677,50 +659,7 @@ export default function Home() {
     }
   }, []);
 
-  const playCrackSound = useCallback((volume = 0.3) => {
-    if (!soundEnabledRef.current) return;
-    const nowMs = performance.now();
-    // Rate-limit crack sound generation to avoid Web Audio node thrashing
-    if (nowMs - lastCrackSoundTimeRef.current < 65) return;
-    lastCrackSoundTimeRef.current = nowMs;
 
-    initAudio();
-    const ctx = audioCtxRef.current;
-    if (!ctx) return;
-
-    try {
-      const now = ctx.currentTime;
-      if (!cachedNoiseBufferRef.current) {
-        const bufferSize = Math.floor(ctx.sampleRate * 0.07);
-        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.12));
-        }
-        cachedNoiseBufferRef.current = buffer;
-      }
-
-      const noise = ctx.createBufferSource();
-      noise.buffer = cachedNoiseBufferRef.current;
-
-      const filter = ctx.createBiquadFilter();
-      filter.type = "bandpass";
-      filter.frequency.setValueAtTime(1200 + Math.random() * 2800, now);
-      filter.Q.setValueAtTime(4 + Math.random() * 6, now);
-
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(volume, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
-
-      noise.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-
-      noise.start(now);
-    } catch {
-      // Ignore audio errors
-    }
-  }, [initAudio]);
 
   const playCelestialPulse = useCallback(() => {
     initAudio();
@@ -744,76 +683,7 @@ export default function Home() {
     }
   }, [initAudio]);
 
-  // Memulai pola retakan persis dari HTML asli user (fleksibel dengan custom length, branches & speed)
-  const triggerCrackSequence = useCallback(
-    (
-      originX: number,
-      originY: number,
-      branches?: number,
-      customLength?: number,
-      soundVol = 0.5,
-      customSpeed?: number
-    ) => {
-      initAudio();
-      playCrackSound(soundVol);
 
-      const mainBranches = branches || Math.floor(Math.random() * 3) + 3;
-      for (let i = 0; i < mainBranches; i++) {
-        const baseAngle = ((Math.PI * 2) / mainBranches) * i + (Math.random() - 0.5) * 0.7;
-        const length = customLength || Math.random() * 250 + 200;
-        const speed = customSpeed ?? (Math.random() * 7 + 9);
-        cracksRef.current.push(new CrackBranch(originX, originY, baseAngle, length, 3.8, 0, speed));
-      }
-
-      sparklesRef.current.push(new Sparkle(originX, originY));
-    },
-    [initAudio, playCrackSound]
-  );
-
-  // Audio efek dentuman es pecah berkeping-keping (Low bass thud + high crisp glass shatter)
-  const playShatterBurstSound = useCallback(() => {
-    if (!soundEnabledRef.current) return;
-    initAudio();
-    const ctx = audioCtxRef.current;
-    if (!ctx) return;
-    try {
-      const now = ctx.currentTime;
-      // 1. Low bass impact thud
-      const osc = ctx.createOscillator();
-      const oscGain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(120, now);
-      osc.frequency.exponentialRampToValueAtTime(30, now + 0.35);
-      oscGain.gain.setValueAtTime(0.55, now);
-      oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-      osc.connect(oscGain);
-      oscGain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.35);
-
-      // 2. High crisp ice/glass crackle
-      const bufferSize = Math.floor(ctx.sampleRate * 0.22);
-      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.18));
-      }
-      const noise = ctx.createBufferSource();
-      noise.buffer = buffer;
-      const filter = ctx.createBiquadFilter();
-      filter.type = "highpass";
-      filter.frequency.setValueAtTime(1600, now);
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.7, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-      noise.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-      noise.start(now);
-    } catch {
-      // ignore
-    }
-  }, [initAudio]);
 
   // Transisi Lembut Lapisan Awan (Cloud Dissolve / Parting) ke Page Hold (Phase 3)
   const triggerCloudTransition = useCallback(() => {
@@ -855,7 +725,6 @@ export default function Home() {
         setCounterValue(Math.floor(obj.val));
       },
       onComplete: () => {
-        setIs100Percent(true);
         triggerCloudTransition();
       },
     });
@@ -1049,7 +918,7 @@ export default function Home() {
       {/* Subtle Ethereal Veil Flash on Transition */}
       <div
         className={`fixed inset-0 z-[60] pointer-events-none transition-opacity duration-700 ease-out ${
-          isShattering ? "opacity-35 bg-white" : "opacity-0"
+          isPhase1Exiting ? "opacity-35 bg-white" : "opacity-0"
         }`}
       />
 
@@ -1315,15 +1184,6 @@ export default function Home() {
                     
                     {/* POJOK KIRI: Picture 1 (Bio Narrative & Crown) - Pinned all the way to left edge */}
                     <div className="w-full lg:w-[46%] xl:w-[42%] 2xl:w-[38%] max-w-2xl relative">
-                      {/* Ambient Crown Backdrop in Hero (Behind Introduction on Left) */}
-                      <div className="absolute -top-10 -right-2 sm:right-0 pointer-events-none select-none opacity-20 md:opacity-25 floating-crown z-0">
-                        <img
-                          src="/assets/crown_realistic.png"
-                          alt="Realistic Royal Crown"
-                          className="w-[200px] sm:w-[260px] md:w-[320px] h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.2)]"
-                        />
-                      </div>
-
                       <div className="relative z-10">
                         {/* Headline */}
                         <h1 className="serif-hero-title text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-bold tracking-tight text-slate-950 font-serif leading-tight">
@@ -1334,14 +1194,25 @@ export default function Home() {
                         </p>
 
                         {/* Narrative paragraphs */}
-                        <div className="text-slate-800 text-base sm:text-lg lg:text-[1.1rem] leading-relaxed sm:leading-8 lg:leading-[1.85] space-y-4 sm:space-y-5 font-sans text-justify">
-                          <p>
+                        <div className="relative text-slate-800 text-base sm:text-lg lg:text-[1.1rem] leading-relaxed sm:leading-8 lg:leading-[1.85] space-y-4 sm:space-y-5 font-sans text-justify">
+                          {/* Ambient Crown Backdrop Centered in Narrative */}
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none z-0">
+                            <div className="opacity-20 md:opacity-25 floating-crown">
+                              <img
+                                src="/assets/crown_realistic.png"
+                                alt="Realistic Royal Crown"
+                                className="w-[240px] sm:w-[300px] md:w-[360px] h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.18)]"
+                              />
+                            </div>
+                          </div>
+
+                          <p className="relative z-10">
                             Halo! Saya <strong>Arga Fabian Gibran</strong>, seorang Web Developer yang saat ini menempuh pendidikan di <strong>SMKN 8 Jakarta</strong> (Kompetensi Keahlian Rekayasa Perangkat Lunak). Saya memiliki ketertarikan mendalam dan fokus keahlian di bidang <strong>Frontend Development</strong>.
                           </p>
-                          <p>
+                          <p className="relative z-10">
                             Bagi saya, frontend adalah seni menyatukan estetika visual dengan logika arsitektur kode yang rapi. Saya sangat antusias merancang dan membangun antarmuka web yang tidak hanya intuitif dan responsif di berbagai perangkat, tetapi juga terasa hidup melalui sentuhan interaksi dinamis (*creative micro-interactions*) serta performa kecepatan yang optimal.
                           </p>
-                          <p>
+                          <p className="relative z-10">
                             Dalam proses eksplorasi teknologi, saya aktif mengembangkan kemampuan pada ekosistem modern seperti <strong>HTML5, CSS3/TailwindCSS, JavaScript, TypeScript, React, dan Next.js</strong>. Selain itu, saya juga dibekali fondasi backend yang solid menggunakan <strong>PHP, Laravel, dan database MySQL</strong>, sehingga mampu memahami alur pengembangan web secara utuh dari pengolahan data hingga tampilan akhir ke pengguna.
                           </p>
                         </div>
@@ -2356,7 +2227,6 @@ export default function Home() {
                     onClick={() => {
                       setShowPortfolioModal(false);
                       setPhase(1);
-                      setIs100Percent(false);
                       cracksRef.current = [];
                       targetProgress.current = 0;
                       currentProgress.current = 0;
